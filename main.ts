@@ -267,10 +267,18 @@ function parseSearch(lines: string[]): ParseRes {
       else return { parseLine: s + 1 };
     }
     let sep = -1;
-    for (let k = s + 1; k < lines.length; k++) if (lines[k].trimEnd() === '=======') { sep = k; break; }
+    for (let k = s + 1; k < lines.length; k++) {
+      const t = lines[k].trimEnd();
+      if (t === '>>>>>>> REPLACE' || t === '<<<<<<< SEARCH') break;
+      if (t === '=======') { sep = k; break; }
+    }
     if (sep === -1) return { parseLine: s + 1 };
     let end = -1;
-    for (let k = sep + 1; k < lines.length; k++) if (lines[k].trimEnd() === '>>>>>>> REPLACE') { end = k; break; }
+    for (let k = sep + 1; k < lines.length; k++) {
+      const t = lines[k].trimEnd();
+      if (t === '<<<<<<< SEARCH') break;
+      if (t === '>>>>>>> REPLACE') { end = k; break; }
+    }
     if (end === -1) return { parseLine: s + 1 };
     edits.push({ kind: 'search', path, oldLines: lines.slice(s + 1, sep), newLines: lines.slice(sep + 1, end) });
     prevPath = path; prevEnd = end; i = end + 1;
